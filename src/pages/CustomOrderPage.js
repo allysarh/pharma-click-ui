@@ -682,7 +682,13 @@ class CustomOrderPage extends React.Component {
         color: "danger",
         alertMessage: "You Must Upload Image Perscription",
       });
-    } else {
+    } else if(this.props.user.role !== 'user'){
+      this.setState({
+        openAlertForm: !this.state.openAlertForm,
+        color: "danger",
+        alertMessage: "You must login to continue checkout.",
+      });
+    }else{
       axios
         .post(URL_API + `/transaction/checkout-perscription`, formData, headers)
         .then((res) => {
@@ -736,7 +742,13 @@ class CustomOrderPage extends React.Component {
         color: "danger",
         alertMessage: "Please fill all field.",
       });
-    } else {
+    } else if(this.props.user.role !== 'user'){
+      this.setState({
+        openAlertForm: !this.state.openAlertForm,
+        color: "danger",
+        alertMessage: "You must login to continue checkout.",
+      });
+    }else{
       axios
         .post(URL_API + `/transaction/checkout-perscription`, formData, headers)
         .then((res) => {

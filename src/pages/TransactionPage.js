@@ -52,6 +52,7 @@ class TransactionPage extends React.Component {
 
     this.items = [
       { label: 'Request', icon: 'pi pi-fw pi-question', status: 4 },
+      { label: 'Accept', icon: 'pi pi-fw pi-question', status: 6 },
       { label: 'Waiting Confirmation', icon: 'pi pi-fw pi-inbox', status: 5 },
       { label: 'On Progress', icon: 'pi pi-fw pi-spinner', status: 1 },
       { label: 'Done', icon: 'pi pi-fw pi-check', status: 2 },
@@ -59,10 +60,9 @@ class TransactionPage extends React.Component {
     ];
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.getTransactionHistory();
-    // this.getDetailTransactions();
-  };
+  }
 
   getDetailTransactions = async (idtransaction) => {
     try {
@@ -103,21 +103,20 @@ class TransactionPage extends React.Component {
 
   onProductReviewChange = (rating, idproduct, index, idtransaction) => {
     console.log(rating, idproduct, idtransaction)
-    this.state.productReview[index] = { idproduct, rating, idtransaction }
+    this.state.productReview[index]= { idproduct, rating, idtransaction }
     this.setState({ productReview: this.state.productReview }, () => console.log("after", this.state.productReview))
   }
 
   onInputChange = (review, index) => {
-    this.state.productReview[index] = { ...this.state.productReview[index], review }
+    this.state.productReview[index] = {...this.state.productReview[index], review}
     this.setState({ productReview: this.state.productReview }, () => console.log("after IC", this.state.productReview))
   }
 
-  onBtnSubmitReview = async () => {
+  onBtnSubmitReview = async () =>{
     try {
       await HTTP.post('/product/review', this.state.productReview)
       this.getTransactionHistory()
-      this.getTransactionHistory()
-      this.setState({ modal: !this.state.modal })
+      this.setState({modal: !this.state.modal})
     } catch (error) {
       console.log(error)
     }
@@ -130,8 +129,8 @@ class TransactionPage extends React.Component {
             <ModalBody>
               <Container>
                 <Row>
-                  <div className="d-flex justify-content-between ">
-                    <p></p>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <p className="pt-4">Detail Transaction</p>
                     <Button
                       color="danger"
                       onClick={() => {
@@ -141,7 +140,7 @@ class TransactionPage extends React.Component {
                       X
                     </Button>
                   </div>
-                  <hr className="mt-3" />
+                  <hr style={{border: "2px solid rgba(34, 129, 133, 1)"}} className="mt-3"/>
                   {this.state.detailTransactions.slice(0, 1).map((item, idx) => {
                     return (
                       <>
@@ -158,6 +157,12 @@ class TransactionPage extends React.Component {
                             {item.address}, {item.postal_code}
                           </p>
                         </Col>
+                        <Col md="12">
+                          <p>
+                            Note : <br />
+                            {item.note}
+                          </p>
+                        </Col>
                       </>
                     );
                   })}
@@ -165,14 +170,19 @@ class TransactionPage extends React.Component {
                   <Col md="6"></Col>
                 </Row>
               </Container>
-              <hr />
+              <hr style={{border: "2px solid rgba(34, 129, 133, 1)"}}/>
               <Container>
                 <Row>
                   {this.state.detailTransactions.map((item, idx) => {
                     return (
                       <>
-                        <Col md="4">
-                          <img src={item.image_url} width="100%" />
+                      {item.idtype === 1 && item.iduser ? (<><Col md="4">
+                          <img src={
+                            item.image_url.includes("http")
+                              ? `${item.image_url}`
+                              
+                              : `${URL_API}/${item.image_url}`
+                          } width="100%" />
                         </Col>
                         <Col md="8 mt-3">
                           <p>
@@ -184,19 +194,51 @@ class TransactionPage extends React.Component {
                             Rp.{item.pack_price.toLocaleString()} X {item.qty_buy}
                           </p>
                         </Col>
-                        <hr />
+                        </>):(<>
+                          
+                          {item.img_order_url && !item.image_url ? (<><Col md="12"><h6>Image Perscription</h6><img src={
+                          item.img_order_url.includes("http")
+                            ? `${item.img_order_url}`
+                            
+                            : `${URL_API}/${item.img_order_url}`
+                        } width="100%" /></Col></>):(<><Col md="4"><img src={
+                          item.image_url.includes("http")
+                            ? `${item.image_url}`
+                            
+                            : `${URL_API}/${item.image_url}`
+                        } width="100%" /></Col></>)}
+                          
+                        
+                        {item.unit_price || item.product_name || item.brand ? 
+                        (<><Col md="8 mt-3">
+                        <p>
+                          <strong>{item.product_name}</strong>
+                          <br />
+                          {item.brand}
+                        </p>
+                        <p>
+                          netto : Rp.{item.unit_price.toLocaleString()}/{item.unit} X {item.qty_buy_total_netto}
+                        </p>
+                      </Col></>):
+                        (<></>)}
+                        </>)}  
                       </>
                     );
                   })}
                 </Row>
               </Container>
               <Container>
-                <Row>
+              <hr style={{border: "2px solid rgba(34, 129, 133, 1)"}}/>
+                <Row style={{lineHeight:"4px"}}>
                   {this.state.detailTransactions.splice(0, 1).map((item, idx) => {
                     return (
                       <>
-                        <Col md="4">Total</Col>
-                        <Col md="8">Rp.{item.total_price.toLocaleString()}</Col>
+                      {item.shipping_cost || item.total_price ? 
+                      (<><Col md="4"><strong>Shipping Cost</strong></Col>
+                      <Col md="8"><p> Rp.{item.shipping_cost.toLocaleString()}</p></Col>
+                      <Col md="4"><strong>Total</strong></Col>
+                      <Col md="8"><p> Rp.{item.total_price.toLocaleString()}</p></Col></>):
+                      (<><center><p><i>Please Wait Admin Accept Your Custom Order.</i></p></center></>)}
                       </>
                     );
                   })}
@@ -226,7 +268,7 @@ class TransactionPage extends React.Component {
                   <Form>
                     <FormGroup>
                       <Label>Review :</Label>
-                      <Input value={this.state.productReview[idx] && this.state.productReview[idx].review} onChange={(e) => this.onInputChange(e.target.value, idx)} />
+                      <Input value={this.state.productReview[idx] && this.state.productReview[idx].review} onChange={(e) => this.onInputChange(e.target.value, idx)}/>
                     </FormGroup>
                   </Form>
                   <br />
@@ -242,7 +284,7 @@ class TransactionPage extends React.Component {
     }
   };
 
-  getTransactionHistory = (status) => {
+  getTransactionHistory = (status = 4) => {
     if (status) {
       console.log("status trans", status)
       let value = `?id_transaction_status=${status}`;
@@ -299,9 +341,12 @@ class TransactionPage extends React.Component {
             color: "success",
             alertMessage: res.data.message,
           });
-          this.onTabChange(4)
-          this.getTransactionHistory(4)
-
+          setTimeout(() => {
+            this.setState({
+              alertUpload: !this.state.alertUpload,
+            });
+          }, 3000);
+          this.getTransactionHistory();
         })
         .catch((err) => {
           console.log(err);
@@ -393,6 +438,7 @@ class TransactionPage extends React.Component {
   }
   render() {
     console.log("waw", this.state.historyTransactions);
+    console.log("iduser", this.props.iduser);
     // console.log("detran", this.state.detailTransactions);
     return (
       <Col md="10 mt-5">
@@ -413,7 +459,7 @@ class TransactionPage extends React.Component {
                 this.state.historyTransactions.map((item) => {
                   return (
                     <>
-                      <Col md="12">
+                    {item.idtype === 1 && item.iduser === this.props.iduser ? (<><Col md="12">
                         <Card
                           body
                           style={{
@@ -430,8 +476,8 @@ class TransactionPage extends React.Component {
                                 <CardText>{item.invoice}</CardText>
                               </Col>
                               <Col md="3">
-                                <CardTitle tag="h6">Recipient Name</CardTitle>
-                                <CardText>{item.recipient}</CardText>
+                                <CardTitle tag="h6">Order Type</CardTitle>
+                                <CardText>Pack</CardText>
                               </Col>
                               <Col md="2">
                                 <CardTitle tag="h6">Status</CardTitle>
@@ -455,7 +501,22 @@ class TransactionPage extends React.Component {
                                   Detail
                                 </Button>
                                 &nbsp; &nbsp;
-                                {item.status_name === "request" && (
+                                {item.status_name === "request"  && (
+                                  <>
+                                    <Button
+                                      color="primary"
+                                      onClick={() => {
+                                        this.setState({
+                                          modalUpload: !this.state.modalUpload,
+                                          idtransaction: item.id,
+                                        });
+                                      }}
+                                    >
+                                      Upload
+                                    </Button>
+                                  </>
+                                )}
+                                {item.status_name === "accept"  && (
                                   <>
                                     <Button
                                       color="primary"
@@ -479,20 +540,115 @@ class TransactionPage extends React.Component {
                                         this.setState({ modal: !this.state.modal, modalType: 'review' })
                                       }}
                                       disabled={parseInt(item.review)}>
-                                      {
-                                        parseInt(item.review) ?
+                                        {
+                                          parseInt(item.review) ?
                                           'Product Reviewed' :
-                                          'Review Product'
-                                      }
+                                          'Review Product' 
+                                        }
                                     </Button>
                                   )
                                 }
-
                               </Col>
                             </Row>
                           </Container>
                         </Card>
                       </Col>
+                      </>):
+                      item.idtype === 2 && item.iduser === this.props.iduser &&(<><Col md="12">
+                      <Card
+                        body
+                        style={{
+                          borderRadius: "15px",
+                          boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                          marginTop: "1%",
+                          border: "none",
+                        }}
+                      >
+                        <Container>
+                          <Row>
+                            <Col md="4">
+                              <CardTitle tag="h6">Invoice</CardTitle>
+                              <CardText>{item.invoice}</CardText>
+                            </Col>
+                            <Col md="3">
+                              <CardTitle tag="h6">Order Type</CardTitle>
+                              <CardText>Custom</CardText>
+                            </Col>
+                            <Col md="2">
+                              <CardTitle tag="h6">Status</CardTitle>
+                              <CardText>{item.status_name}</CardText>
+                            </Col>
+                            <Col
+                              md="3"
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Button
+                                color="warning"
+                                onClick={() => {
+                                  this.setState({ modal: !this.state.modal, modalType: 'detail' });
+                                  this.getDetailTransactions(item.id);
+                                }}
+                              >
+                                Detail
+                              </Button>
+                              &nbsp; &nbsp;
+                              {item.status_name === "request" && (
+                                <>
+                                  {/* <Button
+                                    color="primary"
+                                    onClick={() => {
+                                      this.setState({
+                                        modalUpload: !this.state.modalUpload,
+                                        idtransaction: item.id,
+                                      });
+                                    }}
+                                  >
+                                    Upload
+                                  </Button> */}
+                                </>
+                              )}
+                              {item.status_name === "accept" && (
+                                <>
+                                  <Button
+                                    color="primary"
+                                    onClick={() => {
+                                      this.setState({
+                                        modalUpload: !this.state.modalUpload,
+                                        idtransaction: item.id,
+                                      });
+                                    }}
+                                  >
+                                    Upload
+                                  </Button>
+                                </>
+                              )}
+                              {
+                                item.status_name === "done" && (
+                                  <Button
+                                    color="success"
+                                    onClick={() => {
+                                      this.getDetailTransactions(item.id)
+                                      this.setState({ modal: !this.state.modal, modalType: 'review' })
+                                    }}
+                                    disabled={parseInt(item.review)}>
+                                      {
+                                        parseInt(item.review) ?
+                                        'Product Reviewed' :
+                                        'Review Product' 
+                                      }
+                                  </Button>
+                                )
+                              }
+                            </Col>
+                          </Row>
+                        </Container>
+                      </Card>
+                    </Col></>)}
+                      
                     </>
                   );
                 })

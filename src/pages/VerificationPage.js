@@ -28,6 +28,7 @@ class VerificationPage extends React.Component {
                 this.msgs.show({severity: 'success', summary: 'Success:', detail: verification.data.messages, sticky: true})
             }
         } catch (error) {
+            
             console.log("verify", error)
         }
     }
